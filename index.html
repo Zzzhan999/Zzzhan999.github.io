@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人网站</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background-color: #2c3e50;
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #3498db;
+        }
+
+        /* 主页横幅 */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://picsum.photos/1920/1080') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 0 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+        }
+
+        /* 通用内容容器 */
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        /* 关于我板块 */
+        .about {
+            display: flex;
+            gap: 3rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .about-img {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .about-img img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .about-text {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .about-text h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .about-text p {
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            color: #34495e;
+        }
+
+        /* 作品/博客列表 */
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .project-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .project-card .card-content {
+            padding: 1.5rem;
+        }
+
+        .project-card h3 {
+            margin-bottom: 0.8rem;
+            color: #2c3e50;
+        }
+
+        .project-card p {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .project-card a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 5rem;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .about {
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <ul>
+            <li><a href="#home">首页</a></li>
+            <li><a href="#about">关于我</a></li>
+            <li><a href="#projects">作品集</a></li>
+            <li><a href="#contact">联系我</a></li>
+        </ul>
+    </nav>
+
+    <!-- 主页横幅 -->
+    <section id="home" class="hero">
+        <h1>你好，我是张佳霖</h1>
+        <p>这是我的个人网站，记录我的成长、分享我的想法和作品</p>
+    </section>
+
+    <!-- 关于我 -->
+    <section id="about" class="container">
+        <div class="about">
+            <div class="about-img">
+                <img src="https://picsum.photos/600/400" alt="关于我的照片">
+            </div>
+            <div class="about-text">
+                <h2>关于我</h2>
+                <p>大家好！我是张佳霖，一名前端开发者。</p>
+                <p>我热爱编程、写作、摄影和旅行，喜欢通过不断学习和实践提升自己。</p>
+                <p>这个网站是我展示自己的小天地，会分享我的学习笔记、项目作品和生活感悟，希望能和大家一起交流成长。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 作品集/博客 -->
+    <section id="projects" class="container">
+        <h2 style="font-size: 2rem; color: #2c3e50; text-align: center;">我的作品/博客</h2>
+        <div class="projects">
+            <!-- 作品卡片1 -->
+            <div class="project-card">
+                <img src="https://picsum.photos/600/400?random=1" alt="作品1">
+                <div class="card-content">
+                    <h3>文章/项目标题 1</h3>
+                    <p>这是第一篇文章/项目的简短描述，介绍核心内容...</p>
+                    <a href="#">查看详情 →</a>
+                </div>
+            </div>
+            <!-- 作品卡片2 -->
+            <div class="project-card">
+                <img src="https://picsum.photos/600/400?random=2" alt="作品2">
+                <div class="card-content">
+                    <h3>文章/项目标题 2</h3>
+                    <p>这是第二篇文章/项目的简短描述，介绍核心内容...</p>
+                    <a href="#">查看详情 →</a>
+                </div>
+            </div>
+            <!-- 作品卡片3 -->
+            <div class="project-card">
+                <img src="https://picsum.photos/600/400?random=3" alt="作品3">
+                <div class="card-content">
+                    <h3>文章/项目标题 3</h3>
+                    <p>这是第三篇文章/项目的简短描述，介绍核心内容...</p>
+                    <a href="#">查看详情 →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer id="contact">
+        <p>© 2026 张佳霖 - 个人网站</p>
+        <p>联系方式：2214528443@qq.com | GitHub：[]</p>
+    </footer>
+
+    <script>
+        // 平滑滚动效果
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
