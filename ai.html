@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 助手 - 我的个人网站</title>
+    <style>
+        /* 全局样式，和你的网站保持一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        /* 导航栏（复用原有样式） */
+        nav {
+            background-color: #2c3e50;
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #3498db;
+        }
+
+        /* AI 聊天容器 */
+        .ai-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .ai-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* 聊天窗口 */
+        .chat-box {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            margin-bottom: 1rem;
+        }
+
+        /* 消息气泡 */
+        .message {
+            margin-bottom: 1rem;
+            max-width: 80%;
+            clear: both;
+        }
+
+        .user-message {
+            float: right;
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px 18px 0 18px;
+        }
+
+        .ai-message {
+            float: left;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px 18px 18px 0;
+        }
+
+        /* 加载动画 */
+        .loading {
+            float: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.2rem;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px 18px 18px 0;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #3498db;
+            animation: bounce 1s infinite alternate;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        /* 输入区域 */
+        .input-area {
+            display: flex;
+            gap: 1rem;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #messageInput:focus {
+            border-color: #3498db;
+        }
+
+        #sendBtn, #clearBtn {
+            padding: 0 1.5rem;
+            border: none;
+            border-radius: 50px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #sendBtn:hover, #clearBtn:hover {
+            background-color: #2980b9;
+        }
+
+        #clearBtn {
+            background-color: #7f8c8d;
+        }
+
+        #clearBtn:hover {
+            background-color: #616a6b;
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 5rem;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .chat-box {
+                height: 400px;
+            }
+
+            .ai-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏（和主页一致） -->
+    <nav>
+        <ul>
+            <li><a href="index.html">首页</a></li>
+            <li><a href="index.html#about">关于我</a></li>
+            <li><a href="index.html#projects">作品集</a></li>
+            <li><a href="index.html#contact">联系我</a></li>
+            <li><a href="ai.html" style="color: #3498db;">AI 助手</a></li>
+        </ul>
+    </nav>
+
+    <!-- AI 聊天主体 -->
+    <div class="ai-container">
+        <h1 class="ai-title">我的专属 AI 助手</h1>
+        
+        <!-- 聊天窗口 -->
+        <div class="chat-box" id="chatBox">
+            <!-- 欢迎语 -->
+            <div class="message ai-message">
+                你好！我是你的专属 AI 助手，有什么问题都可以问我～
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="输入你的问题，按回车发送...">
+            <button id="clearBtn">清空</button>
+            <button id="sendBtn">发送</button>
+        </div>
+    </div>
+
+    <!-- 页脚（和主页一致） -->
+    <footer>
+        <p>© 2026 Zzzhan999 - 个人网站</p>
+        <p>联系方式：2214528443@qq.com | GitHub：Zzzhan999</p>
+        <p style="margin-top: 1rem;">
+            本站访客数：
+            <span id="visitorCount" style="color: #3498db; font-weight: bold; font-size: 1.1rem;">0</span>
+        </p>
+    </footer>
+
+    <script>
+        // 元素获取
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const visitorCount = document.getElementById('visitorCount');
+
+        // 访客计数器（复用原有逻辑）
+        fetch('https://api.countapi.xyz/hit/Zzzhan999/个人网站访客')
+            .then(response => response.json())
+            .then(data => {
+                visitorCount.textContent = data.value;
+            })
+            .catch(err => {
+                visitorCount.textContent = '99+';
+            });
+
+        // AI 回复逻辑（可替换为真实接口）
+        function getAIReply(question) {
+            // 自定义回复规则（你可以根据需要扩展）
+            const replies = {
+                "你好": "你好呀 😊，有什么我能帮助你的吗？",
+                "编程": "编程的核心是多练多写，推荐从简单的小项目开始上手～",
+                "前端": "前端学习路线：HTML → CSS → JavaScript → 框架（React/Vue），一步一步来～",
+                "个人网站": "你的个人网站超棒！如果想优化，可以试试加更多互动功能～"
+            };
+
+            // 匹配关键词，没有匹配就返回通用回复
+            for (const [key, reply] of Object.entries(replies)) {
+                if (question.includes(key)) {
+                    return reply;
+                }
+            }
+            return "我正在学习中，这个问题我还在研究～ 你可以问我关于编程、前端、个人网站的问题哦！";
+        }
+
+        // 添加消息到聊天窗口
+        function addMessage(content, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            chatBox.appendChild(messageDiv);
+            // 滚动到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 显示加载动画
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading';
+            loadingDiv.innerHTML = `
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            `;
+            chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return loadingDiv;
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const question = messageInput.value.trim();
+            if (!question) return;
+
+            // 添加用户消息
+            addMessage(question, true);
+            messageInput.value = '';
+
+            // 显示加载动画
+            const loadingDiv = showLoading();
+
+            // 模拟 AI 思考延迟
+            setTimeout(() => {
+                // 移除加载动画
+                loadingDiv.remove();
+                // 添加 AI 回复
+                const reply = getAIReply(question);
+                addMessage(reply, false);
+            }, 1000);
+        }
+
+        // 绑定发送按钮点击事件
+        sendBtn.addEventListener('click', sendMessage);
+
+        // 绑定回车发送
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 清空聊天记录
+        clearBtn.addEventListener('click', () => {
+            chatBox.innerHTML = `
+                <div class="message ai-message">
+                    你好！我是你的专属 AI 助手，有什么问题都可以问我～
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
