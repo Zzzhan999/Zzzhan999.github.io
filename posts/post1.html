@@ -3,137 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章标题 1 - 我的个人网站</title>
+    <title>HTML/CSS 学习心得 - 张佳霖的个人网站</title>
     <style>
-        /* 复用主页的基础样式，保证风格统一 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --text-primary: #e0e0ff;
+            --text-secondary: #8888aa;
+            --accent-1: #6c63ff;
+            --accent-2: #00d4ff;
+            --gradient: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.08);
         }
 
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        ::selection { background: var(--accent-1); color: #fff; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-1); border-radius: 3px; }
+
+        /* NAV */
         nav {
-            background-color: #2c3e50;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             padding: 1rem 5%;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(10,10,26,0.85);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.3);
         }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
-
-        nav a {
-            color: white;
+        .nav-logo {
+            font-size: 1.4rem; font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-decoration: none;
-            font-size: 1.1rem;
+        }
+        .nav-links { list-style: none; display: flex; gap: 2rem; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.95rem; position: relative;
             transition: color 0.3s;
         }
+        .nav-links a::after {
+            content: ''; position: absolute;
+            bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:hover::after { width: 100%; }
 
-        nav a:hover {
-            color: #3498db;
+        .hamburger {
+            display: none; flex-direction: column; gap: 5px;
+            cursor: pointer; background: none; border: none;
+        }
+        .hamburger span {
+            width: 25px; height: 2px;
+            background: var(--text-primary);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%;
+                width: 70%; height: 100vh;
+                flex-direction: column;
+                background: rgba(10,10,26,0.95);
+                backdrop-filter: blur(20px);
+                padding: 5rem 2rem 2rem;
+                gap: 1.5rem;
+                transition: right 0.4s;
+            }
+            .nav-links.open { right: 0; }
+            .nav-links a { font-size: 1.2rem; }
         }
 
-        /* 文章详情容器 */
-        .article-container {
+        /* ARTICLE */
+        .article-page {
+            padding-top: 6rem;
             max-width: 800px;
-            margin: 3rem auto;
-            padding: 0 2rem;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
         }
 
-        .article-title {
-            font-size: 2.2rem;
-            color: #2c3e50;
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeUp 0.8s ease;
+        }
+        .article-category {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: rgba(108,99,255,0.15);
+            border: 1px solid rgba(108,99,255,0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-2);
             margin-bottom: 1rem;
-            text-align: center;
         }
-
+        .article-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .article-meta {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 2rem;
+            color: var(--text-secondary);
             font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .article-meta span { display: flex; align-items: center; gap: 0.3rem; }
+
+        .article-cover {
+            width: 100%;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: fadeUp 0.8s 0.2s ease both;
         }
 
-        .article-content {
+        .article-body {
+            animation: fadeUp 0.8s 0.4s ease both;
+        }
+        .article-body p {
+            color: var(--text-primary);
+            font-size: 1.05rem;
             line-height: 2;
-            color: #34495e;
-            font-size: 1.1rem;
-        }
-
-        .article-content p {
             margin-bottom: 1.5rem;
         }
-
-        .article-content img {
-            max-width: 100%;
-            border-radius: 8px;
+        .article-body h2 {
+            font-size: 1.5rem;
+            margin: 2.5rem 0 1rem;
+            color: var(--accent-2);
+        }
+        .article-body img {
+            width: 100%;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .article-body blockquote {
+            border-left: 3px solid var(--accent-1);
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            background: var(--glass);
+            border-radius: 0 12px 12px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .article-body code {
+            background: rgba(108,99,255,0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: var(--accent-2);
+        }
+        .article-body pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
             margin: 2rem 0;
         }
+        .article-body pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
 
-        /* 返回按钮 */
-        .back-btn {
-            display: inline-block;
-            margin: 3rem auto;
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
+        /* TAGS */
+        .article-tags {
+            display: flex; flex-wrap: wrap; gap: 0.6rem;
+            margin: 3rem 0;
+        }
+        .article-tag {
+            padding: 0.4rem 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-2);
+        }
+
+        /* NAV LINKS */
+        .article-nav {
+            display: flex; justify-content: space-between; gap: 1rem;
+            margin: 3rem 0;
+            padding: 2rem 0;
+            border-top: 1px solid var(--glass-border);
+        }
+        .article-nav a {
+            color: var(--text-secondary);
             text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
+            font-size: 0.95rem;
+            transition: color 0.3s;
         }
+        .article-nav a:hover { color: var(--accent-2); }
+        .article-nav .next { text-align: right; }
 
+        /* BACK */
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            margin: 2rem 0;
+            padding: 0.8rem 1.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.3s, border-color 0.3s;
+        }
         .back-btn:hover {
-            background: #2980b9;
+            background: rgba(108,99,255,0.1);
+            border-color: var(--accent-1);
         }
 
-        /* 页脚 */
+        /* FOOTER */
         footer {
-            background-color: #2c3e50;
-            color: white;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--glass-border);
+            padding: 2rem 5%;
             text-align: center;
-            padding: 2rem;
-            margin-top: 5rem;
+            margin-top: 4rem;
+        }
+        .footer-text { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.8; }
+        .footer-text a { color: var(--accent-2); text-decoration: none; }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(30px); }
+            to { opacity:1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <!-- 导航栏（和主页保持一致） -->
     <nav>
-        <ul>
+        <a href="../index.html" class="nav-logo">ZZZHAN</a>
+        <ul class="nav-links" id="navLinks">
             <li><a href="../index.html">首页</a></li>
             <li><a href="../index.html#about">关于我</a></li>
+            <li><a href="../index.html#skills">技能</a></li>
             <li><a href="../index.html#projects">作品集</a></li>
             <li><a href="../index.html#contact">联系我</a></li>
+            <li><a href="../ai.html">AI 助手</a></li>
         </ul>
+        <button class="hamburger" id="hamburger" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
 
-    <!-- 文章详情 -->
-    <div class="article-container">
-        <h1 class="article-title">【我的第一篇文章】标题可以自定义</h1>
-        <div class="article-meta">发布时间：2026-02-28 | 分类：学习笔记</div>
-        
-        <div class="article-content">
-            <p>这里写文章的正文内容，比如：</p>
-            <p>大家好！这是我在个人网站发布的第一篇文章，主要想分享一下我学习 HTML/CSS 的心得。</p>
-            <p>学习前端的过程中，我发现动手写代码比单纯看教程更重要，比如这次做个人网站，从0到1实现了很多功能，也踩了不少坑，但收获特别大。</p>
-            <!-- 可以插入图片 -->
-            <img src="https://picsum.photos/800/400?random=10" alt="文章配图">
-            <p>后续我会继续更新更多学习笔记，比如 JavaScript 入门、Python 小项目等，欢迎大家交流～</p>
+    <article class="article-page">
+        <div class="article-header">
+            <div class="article-category">学习笔记</div>
+            <h1 class="article-title">HTML/CSS 学习心得：从零开始的前端之旅</h1>
+            <div class="article-meta">
+                <span>&#128197; 2026-02-28</span>
+                <span>&#128337; 阅读约 5 分钟</span>
+                <span>&#128100; 张佳霖</span>
+            </div>
         </div>
 
-        <!-- 返回首页按钮 -->
-        <a href="../index.html" class="back-btn">← 返回首页</a>
-    </div>
+        <img src="https://picsum.photos/800/400?random=10" class="article-cover" alt="文章封面">
 
-    <!-- 页脚（和主页保持一致） -->
+        <div class="article-body">
+            <p>大家好！这是我在个人网站发布的第一篇文章，主要想分享一下我学习 HTML/CSS 的心得。作为一名前端初学者，这一路走来虽然踩了不少坑，但收获也非常大。</p>
+
+            <h2>为什么选择前端开发？</h2>
+            <p>前端开发最吸引我的地方在于——你写的每一行代码都能立刻看到效果。这种即时反馈的感觉让人上瘾，也让我在学习过程中始终保持着热情。</p>
+
+            <blockquote>
+                "学习编程最好的方式就是动手做项目，而不是只看教程。"
+            </blockquote>
+
+            <h2>HTML 基础的重要性</h2>
+            <p>很多人觉得 HTML 简单就忽略了它，但我认为语义化的 HTML 是一切的基础。正确使用 <code>&lt;header&gt;</code>、<code>&lt;nav&gt;</code>、<code>&lt;main&gt;</code>、<code>&lt;section&gt;</code> 等标签，不仅有利于 SEO，也让代码更易维护。</p>
+
+            <h2>CSS 的魅力</h2>
+            <p>CSS 看似简单，实际上蕴含着很深的设计哲学。Flexbox 和 Grid 的出现彻底改变了布局方式，让曾经需要大量 hack 才能实现的效果变得简单优雅。</p>
+
+            <p>这个个人网站就是我从零开始搭建的，从布局到配色，从动画到响应式，每一个细节都是自己动手实现的。虽然还有很多不足，但这个过程让我对前端开发有了更深的理解。</p>
+
+            <h2>下一步计划</h2>
+            <p>接下来我计划深入学习 JavaScript，然后尝试使用 React 或 Vue 框架来构建更复杂的应用。同时也会继续更新博客，记录学习路上的点点滴滴。</p>
+
+            <p>如果你也在学习前端，欢迎一起交流讨论！</p>
+        </div>
+
+        <div class="article-tags">
+            <span class="article-tag">#HTML</span>
+            <span class="article-tag">#CSS</span>
+            <span class="article-tag">#前端入门</span>
+            <span class="article-tag">#学习笔记</span>
+        </div>
+
+        <div class="article-nav">
+            <a href="../index.html#projects">&larr; 返回作品集</a>
+            <a href="post2.html" class="next">下一篇文章 &rarr;</a>
+        </div>
+
+        <a href="../index.html" class="back-btn">&larr; 返回首页</a>
+    </article>
+
     <footer>
-        <p>© 2026 张佳霖 - 个人网站</p>
-        <p>联系方式：2214528443@qq.com | GitHub：Zzzhan999</p>
+        <div class="footer-text">
+            <p>&copy; 2026 张佳霖 - 个人网站 | <a href="https://github.com/Zzzhan999" target="_blank">GitHub</a></p>
+        </div>
     </footer>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    </script>
 </body>
 </html>
