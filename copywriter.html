@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 文案生成器 - 张佳霖的个人网站</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --bg-card: rgba(255,255,255,0.03);
+            --text-primary: #e0e0ff;
+            --text-secondary: #8888aa;
+            --accent-1: #6c63ff;
+            --accent-2: #00d4ff;
+            --gradient: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.08);
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        ::selection { background: var(--accent-1); color: #fff; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-1); border-radius: 3px; }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1rem 5%;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(10,10,26,0.85);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.3);
+        }
+        .nav-logo {
+            font-size: 1.4rem; font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links {
+            list-style: none; display: flex; gap: 2rem;
+        }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.95rem; position: relative;
+            transition: color 0.3s;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute;
+            bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-links a.active { color: var(--accent-2); }
+        .nav-links a.active::after { width: 100%; }
+
+        .hamburger {
+            display: none; flex-direction: column; gap: 5px;
+            cursor: pointer; background: none; border: none;
+        }
+        .hamburger span {
+            width: 25px; height: 2px;
+            background: var(--text-primary);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%;
+                width: 70%; height: 100vh;
+                flex-direction: column;
+                background: rgba(10,10,26,0.95);
+                backdrop-filter: blur(20px);
+                padding: 5rem 2rem 2rem;
+                gap: 1.5rem;
+                transition: right 0.4s;
+            }
+            .nav-links.open { right: 0; }
+            .nav-links a { font-size: 1.2rem; }
+        }
+
+        /* MAIN */
+        .page {
+            padding-top: 5rem;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 0 2rem;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .page-header h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* FORM */
+        .form-container {
+            width: 100%; max-width: 700px;
+            padding: 0 2rem 2rem;
+        }
+
+        .form-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* PLATFORM SELECTOR */
+        .platform-selector {
+            display: flex; gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .platform-btn {
+            flex: 1;
+            padding: 0.9rem;
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            background: var(--glass);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .platform-btn:hover {
+            border-color: var(--accent-1);
+            color: var(--text-primary);
+        }
+        .platform-btn.active {
+            border-color: var(--accent-1);
+            background: rgba(108,99,255,0.15);
+            color: var(--accent-2);
+            box-shadow: 0 0 20px rgba(108,99,255,0.15);
+        }
+        .platform-btn .icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+
+        /* TOPIC INPUT */
+        .topic-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+        }
+        .topic-input:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 20px rgba(108,99,255,0.1);
+        }
+        .topic-input::placeholder { color: var(--text-secondary); }
+
+        /* GENERATE BUTTON */
+        .generate-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 14px;
+            background: var(--gradient);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(108,99,255,0.3);
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(108,99,255,0.4);
+        }
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* RESULT */
+        .result-container {
+            width: 100%; max-width: 700px;
+            padding: 0 2rem 3rem;
+            display: none;
+        }
+        .result-container.show { display: block; }
+
+        .result-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--accent-2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1.5rem; right: 1.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: var(--glass);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            border-color: var(--accent-1);
+            color: var(--accent-2);
+        }
+
+        /* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .loading.show { display: block; }
+
+        .loading-dots {
+            display: inline-flex; gap: 6px;
+        }
+        .loading-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent-1);
+            animation: bounce 1.4s infinite;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.8rem;
+        }
+
+        /* ERROR */
+        .error-msg {
+            display: none;
+            padding: 1rem 1.5rem;
+            background: rgba(255,80,80,0.1);
+            border: 1px solid rgba(255,80,80,0.2);
+            border-radius: 12px;
+            color: #ff6b6b;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+        .error-msg.show { display: block; }
+
+        /* FOOTER */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--glass-border);
+            padding: 2rem 5%;
+            text-align: center;
+            margin-top: auto;
+        }
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        .footer-text a { color: var(--accent-2); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <nav>
+        <a href="index.html" class="nav-logo">ZZZHAN</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="index.html#about">关于我</a></li>
+            <li><a href="index.html#skills">技能</a></li>
+            <li><a href="index.html#projects">作品集</a></li>
+            <li><a href="index.html#timeline">经历</a></li>
+            <li><a href="index.html#contact">联系我</a></li>
+            <li><a href="ai.html">AI 助手</a></li>
+            <li><a href="copywriter.html" class="active">文案生成</a></li>
+        </ul>
+        <button class="hamburger" id="hamburger" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="page">
+        <div class="page-header">
+            <h1><span>AI</span> 文案生成器</h1>
+            <p>输入主题，一键生成抖音 / 小红书爆款文案</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-card">
+                <!-- PLATFORM SELECTOR -->
+                <div class="platform-selector">
+                    <button class="platform-btn active" data-platform="抖音">
+                        <span class="icon">🎵</span>抖音
+                    </button>
+                    <button class="platform-btn" data-platform="小红书">
+                        <span class="icon">📕</span>小红书
+                    </button>
+                </div>
+
+                <!-- TOPIC INPUT -->
+                <input type="text" class="topic-input" id="topicInput"
+                    placeholder="输入主题或产品描述，例如：夏季防晒霜推荐、周末露营攻略..."
+                    autocomplete="off">
+
+                <!-- GENERATE BUTTON -->
+                <button class="generate-btn" id="generateBtn">生成文案</button>
+
+                <!-- ERROR -->
+                <div class="error-msg" id="errorMsg"></div>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
+            <div class="loading-text">AI 正在创作中...</div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="result-container" id="resultContainer">
+            <div class="result-card">
+                <div class="result-label">生成结果</div>
+                <button class="copy-btn" id="copyBtn">复制</button>
+                <div class="result-text" id="resultText"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-text">
+            <p>&copy; 2026 张佳霖 - 个人网站 | <a href="https://github.com/Zzzhan999" target="_blank">GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // ===== 配置 =====
+        const API_URL = "https://api.xiaomimimo.com/v1/chat/completions";
+        const API_KEY = "tp-c8nanp6m1mb8g8jv8l68lpypm69wvtasgc7s2q75tneus04x";
+
+        const PROMPTS = {
+            "抖音": `你是一位资深抖音文案创作者。根据用户提供的主题，生成一条抖音短视频文案。
+要求：
+1. 标题：15字以内，制造悬念或引发好奇
+2. 正文：口语化、节奏感强，适合15-60秒短视频口播
+3. 开头3秒必须有钩子（反问/冲突/痛点）
+4. 结尾引导互动（点赞/评论/关注/收藏）
+5. 生成5-8个相关热门话题标签（#标签）
+输出格式：
+标题：xxx
+文案：xxx
+标签：#xxx #xxx #xxx`,
+            "小红书": `你是一位资深小红书博主。根据用户提供的主题，生成一篇小红书笔记文案。
+要求：
+1. 标题：20字以内，用数字/emoji/痛点词吸引点击
+2. 正文结构：开头引入 → 核心内容（分点/分段）→ 总结互动
+3. 语言风格：真诚分享感、闺蜜聊天感，适当使用emoji
+4. 正文控制在300-500字
+5. 结尾引导收藏/点赞/关注
+6. 生成8-12个相关话题标签
+输出格式：
+标题：xxx
+正文：xxx
+标签：#xxx #xxx #xxx`
+        };
+
+        // ===== DOM =====
+        const topicInput = document.getElementById("topicInput");
+        const generateBtn = document.getElementById("generateBtn");
+        const loading = document.getElementById("loading");
+        const resultContainer = document.getElementById("resultContainer");
+        const resultText = document.getElementById("resultText");
+        const copyBtn = document.getElementById("copyBtn");
+        const errorMsg = document.getElementById("errorMsg");
+
+        let selectedPlatform = "抖音";
+
+        // ===== Hamburger =====
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("navLinks");
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navLinks.classList.toggle("open");
+        });
+
+        // ===== Platform Selector =====
+        document.querySelectorAll(".platform-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".platform-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                selectedPlatform = btn.dataset.platform;
+            });
+        });
+
+        // ===== Generate =====
+        async function generate() {
+            const topic = topicInput.value.trim();
+            if (!topic) {
+                topicInput.focus();
+                return;
+            }
+
+            generateBtn.disabled = true;
+            loading.classList.add("show");
+            resultContainer.classList.remove("show");
+            errorMsg.classList.remove("show");
+
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: "mimo-v2.5-pro",
+                        max_tokens: 1024,
+                        messages: [
+                            { role: "system", content: PROMPTS[selectedPlatform] },
+                            { role: "user", content: `主题：${topic}` },
+                        ],
+                    }),
+                });
+
+                const data = await resp.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message || JSON.stringify(data.error));
+                }
+
+                const text = data.choices?.[0]?.message?.content || "生成失败，请重试";
+                resultText.textContent = text;
+                resultContainer.classList.add("show");
+            } catch (e) {
+                errorMsg.textContent = "生成失败：" + e.message;
+                errorMsg.classList.add("show");
+            } finally {
+                loading.classList.remove("show");
+                generateBtn.disabled = false;
+            }
+        }
+
+        generateBtn.addEventListener("click", generate);
+        topicInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") generate();
+        });
+
+        // ===== Copy =====
+        copyBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(resultText.textContent).then(() => {
+                copyBtn.textContent = "已复制";
+                setTimeout(() => { copyBtn.textContent = "复制"; }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
