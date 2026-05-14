@@ -321,9 +321,86 @@
             line-height: 1.8;
         }
         .footer-text a { color: var(--accent-2); text-decoration: none; }
+
+        /* AUTH OVERLAY */
+        .auth-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg-primary);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-overlay.hidden { display: none; }
+        .auth-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            max-width: 380px; width: 90%;
+            backdrop-filter: blur(10px);
+        }
+        .auth-box h2 {
+            font-size: 1.5rem; margin-bottom: 0.5rem;
+        }
+        .auth-box h2 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .auth-box p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            text-align: center;
+            letter-spacing: 4px;
+            transition: border-color 0.3s;
+            margin-bottom: 1rem;
+        }
+        .auth-input:focus { border-color: var(--accent-1); }
+        .auth-submit {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--gradient);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .auth-submit:hover { transform: translateY(-2px); }
+        .auth-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 0.8rem;
+            display: none;
+        }
+        .auth-error.show { display: block; }
     </style>
 </head>
 <body>
+    <!-- AUTH OVERLAY -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box">
+            <h2><span>&#128274;</span> 访问验证</h2>
+            <p>请输入访问密码</p>
+            <input type="password" class="auth-input" id="authInput" placeholder="······" maxlength="20">
+            <button class="auth-submit" id="authSubmit">进入</button>
+            <div class="auth-error" id="authError">密码错误，请重试</div>
+        </div>
+    </div>
     <!-- NAV -->
     <nav>
         <a href="index.html" class="nav-logo">ZZZHAN</a>
@@ -405,6 +482,37 @@
         // ===== 配置 =====
         const API_URL = "https://token-plan-cn.xiaomimimo.com/v1/chat/completions";
         const API_KEY = "tp-c8nanp6m1mb8g8jv8l68lpypm69wvtasgc7s2q75tneus04x";
+        const PASS_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"; // sha256 of "123456"
+
+        // ===== Auth =====
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        const authOverlay = document.getElementById("authOverlay");
+        const authInput = document.getElementById("authInput");
+        const authSubmit = document.getElementById("authSubmit");
+        const authError = document.getElementById("authError");
+
+        if (sessionStorage.getItem("cw_auth") === "1") {
+            authOverlay.classList.add("hidden");
+        }
+
+        async function checkAuth() {
+            const hash = await sha256(authInput.value.trim());
+            if (hash === PASS_HASH) {
+                sessionStorage.setItem("cw_auth", "1");
+                authOverlay.classList.add("hidden");
+            } else {
+                authError.classList.add("show");
+                authInput.value = "";
+                authInput.focus();
+            }
+        }
+
+        authSubmit.addEventListener("click", checkAuth);
+        authInput.addEventListener("keydown", e => { if (e.key === "Enter") checkAuth(); });
 
         const PROMPTS = {
             "抖音": `你是一位资深抖音文案创作者。根据用户提供的主题，生成一条抖音短视频文案。
