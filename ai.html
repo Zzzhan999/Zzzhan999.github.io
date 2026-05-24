@@ -399,10 +399,11 @@
             div.className = `message ${isUser ? 'user-msg' : 'ai-msg'}`;
             const avatar = document.createElement('div');
             avatar.className = 'msg-avatar';
-            avatar.textContent = isUser ? '&#128100;' : '&#129302;';
+            avatar.textContent = isUser ? '\u{1F464}' : '\u{1F916}';
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
-            bubble.innerHTML = content;
+            if (isUser) { bubble.textContent = content; }
+            else { bubble.innerHTML = content; }
             if (isUser) { div.appendChild(bubble); div.appendChild(avatar); }
             else { div.appendChild(avatar); div.appendChild(bubble); }
             chatBox.appendChild(div);
