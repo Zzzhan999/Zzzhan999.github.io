@@ -1,1 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES-GCM 加密算法学习笔记 - 张佳霖的个人网站</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --text-primary: #e0e0ff;
+            --text-secondary: #8888aa;
+            --accent-1: #6c63ff;
+            --accent-2: #00d4ff;
+            --gradient: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.08);
+        }
 
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        ::selection { background: var(--accent-1); color: #fff; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-1); border-radius: 3px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1rem 5%;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(10,10,26,0.85);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.3);
+        }
+        .nav-logo {
+            font-size: 1.4rem; font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links { list-style: none; display: flex; gap: 2rem; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.95rem; position: relative;
+            transition: color 0.3s;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute;
+            bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:hover::after { width: 100%; }
+
+        .hamburger {
+            display: none; flex-direction: column; gap: 5px;
+            cursor: pointer; background: none; border: none;
+        }
+        .hamburger span {
+            width: 25px; height: 2px;
+            background: var(--text-primary);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%;
+                width: 70%; height: 100vh;
+                flex-direction: column;
+                background: rgba(10,10,26,0.95);
+                backdrop-filter: blur(20px);
+                padding: 5rem 2rem 2rem;
+                gap: 1.5rem;
+                transition: right 0.4s;
+            }
+            .nav-links.open { right: 0; }
+            .nav-links a { font-size: 1.2rem; }
+        }
+
+        .article-page {
+            padding-top: 6rem;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeUp 0.8s ease;
+        }
+        .article-category {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: rgba(108,99,255,0.15);
+            border: 1px solid rgba(108,99,255,0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-2);
+            margin-bottom: 1rem;
+        }
+        .article-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .article-meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .article-meta span { display: flex; align-items: center; gap: 0.3rem; }
+
+        .article-cover {
+            width: 100%;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: fadeUp 0.8s 0.2s ease both;
+        }
+
+        .article-body { animation: fadeUp 0.8s 0.4s ease both; }
+        .article-body p {
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            line-height: 2;
+            margin-bottom: 1.5rem;
+        }
+        .article-body h2 {
+            font-size: 1.5rem;
+            margin: 2.5rem 0 1rem;
+            color: var(--accent-2);
+        }
+        .article-body h3 {
+            font-size: 1.2rem;
+            margin: 2rem 0 0.8rem;
+            color: var(--text-primary);
+        }
+        .article-body img {
+            width: 100%;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .article-body blockquote {
+            border-left: 3px solid var(--accent-1);
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            background: var(--glass);
+            border-radius: 0 12px 12px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .article-body code {
+            background: rgba(108,99,255,0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: var(--accent-2);
+        }
+        .article-body pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+        .article-body pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+        .article-body ul, .article-body ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-primary);
+        }
+        .article-body li {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .article-tags {
+            display: flex; flex-wrap: wrap; gap: 0.6rem;
+            margin: 3rem 0;
+        }
+        .article-tag {
+            padding: 0.4rem 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-2);
+        }
+
+        .article-nav {
+            display: flex; justify-content: space-between; gap: 1rem;
+            margin: 3rem 0;
+            padding: 2rem 0;
+            border-top: 1px solid var(--glass-border);
+        }
+        .article-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+        .article-nav a:hover { color: var(--accent-2); }
+        .article-nav .next { text-align: right; }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            margin: 2rem 0;
+            padding: 0.8rem 1.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(108,99,255,0.1);
+            border-color: var(--accent-1);
+        }
+
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--glass-border);
+            padding: 2rem 5%;
+            text-align: center;
+            margin-top: 4rem;
+        }
+        .footer-text { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.8; }
+        .footer-text a { color: var(--accent-2); text-decoration: none; }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(30px); }
+            to { opacity:1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="nav-logo">ZZZHAN</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="../index.html">首页</a></li>
+            <li><a href="../index.html#about">关于我</a></li>
+            <li><a href="../index.html#skills">技能</a></li>
+            <li><a href="../index.html#projects">作品集</a></li>
+            <li><a href="../index.html#contact">联系我</a></li>
+            <li><a href="../ai.html">AI 助手</a></li>
+        </ul>
+        <button class="hamburger" id="hamburger" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <article class="article-page">
+        <div class="article-header">
+            <div class="article-category">学习笔记</div>
+            <h1 class="article-title">AES-GCM 加密算法学习笔记</h1>
+            <div class="article-meta">
+                <span>&#128197; 2026-09-10</span>
+                <span>&#128337; 阅读约 10 分钟</span>
+                <span>&#128100; 张佳霖</span>
+            </div>
+        </div>
+
+        <img src="https://picsum.photos/800/400?random=12" class="article-cover" alt="文章封面">
+
+        <div class="article-body">
+
+<p>
+AES-GCM（Advanced Encryption Standard - Galois/Counter Mode）
+是一种现代认证加密算法（AEAD），广泛应用于 HTTPS、API 数据保护、Web 加密等场景。
+在 CTF 中，经常通过分析前端 JavaScript 加密逻辑，寻找密钥管理漏洞。
+</p>
+
+
+<h2>AES是什么？</h2>
+
+<p>
+AES（Advanced Encryption Standard），中文称为高级加密标准，
+是一种对称加密算法。
+</p>
+
+<p>
+对称加密的特点是：
+<strong>加密密钥和解密密钥相同。</strong>
+</p>
+
+
+<pre><code>
+明文
+ |
+ | Key
+ ↓
+AES加密
+ |
+ ↓
+密文
+
+
+密文
+ |
+ | Key
+ ↓
+AES解密
+ |
+ ↓
+明文
+</code></pre>
+
+
+
+<h2>对称加密简介</h2>
+
+<p>
+对称加密相比非对称加密速度更快，
+因此大量应用于数据传输和存储保护。
+</p>
+
+
+<table>
+
+<tr>
+<th>算法</th>
+<th>说明</th>
+</tr>
+
+<tr>
+<td>AES</td>
+<td>目前最常用的对称加密算法</td>
+</tr>
+
+<tr>
+<td>DES</td>
+<td>已经不安全</td>
+</tr>
+
+<tr>
+<td>3DES</td>
+<td>DES增强版本</td>
+</tr>
+
+<tr>
+<td>SM4</td>
+<td>国产密码算法</td>
+</tr>
+
+</table>
+
+
+
+<h2>AES密钥长度</h2>
+
+<p>
+AES支持三种密钥长度：
+</p>
+
+
+<table>
+
+<tr>
+<th>类型</th>
+<th>密钥长度</th>
+</tr>
+
+<tr>
+<td>AES-128</td>
+<td>128 bit</td>
+</tr>
+
+<tr>
+<td>AES-192</td>
+<td>192 bit</td>
+</tr>
+
+<tr>
+<td>AES-256</td>
+<td>256 bit</td>
+</tr>
+
+</table>
+
+
+<p>
+AES-256需要32字节密钥：
+</p>
+
+
+<pre><code>
+256 bit = 32 byte
+</code></pre>
+
+
+
+
+<h2>AES工作模式</h2>
+
+
+<p>
+AES算法本身只负责数据加密，
+实际应用需要结合不同工作模式。
+</p>
+
+
+<table>
+
+<tr>
+<th>模式</th>
+<th>特点</th>
+</tr>
+
+<tr>
+<td>ECB</td>
+<td>简单但存在安全问题</td>
+</tr>
+
+<tr>
+<td>CBC</td>
+<td>需要初始化向量 IV</td>
+</tr>
+
+<tr>
+<td>CTR</td>
+<td>流加密模式</td>
+</tr>
+
+<tr>
+<td>GCM</td>
+<td>认证加密模式</td>
+</tr>
+
+</table>
+
+
+
+
+<h2>AES-GCM原理</h2>
+
+
+<p>
+AES-GCM是一种AEAD（Authenticated Encryption with Associated Data）
+认证加密算法。
+</p>
+
+
+<p>
+相比普通AES加密，
+AES-GCM同时提供：
+</p>
+
+
+<ul>
+
+<li>
+数据保密性：防止别人读取数据
+</li>
+
+<li>
+数据完整性：检测数据是否被修改
+</li>
+
+</ul>
+
+
+
+<h2>AES-GCM组成</h2>
+
+
+<pre><code>
+输入:
+
+Key
++
+IV
++
+Plaintext
++
+AAD(可选)
+
+
+       ↓
+
+
+AES-GCM
+
+
+       ↓
+
+
+输出:
+
+Ciphertext
++
+Authentication Tag
+</code></pre>
+
+
+
+
+<h2>Key（密钥）</h2>
+
+
+<p>
+Key 是AES加密的核心参数。
+</p>
+
+
+<p>
+AES-GCM的安全性高度依赖密钥管理。
+</p>
+
+
+<blockquote>
+算法安全 ≠ 系统安全。
+错误的密钥设计会导致安全漏洞。
+</blockquote>
+
+
+
+
+<h2>IV（初始化向量）</h2>
+
+
+<p>
+IV（Initialization Vector）
+中文称为初始化向量。
+</p>
+
+
+<p>
+它用于增加随机性，
+避免相同明文产生相同密文。
+</p>
+
+
+<pre><code>
+没有IV:
+
+成绩=100
+
+↓
+
+密文A
+
+
+成绩=100
+
+↓
+
+密文A
+
+
+加入IV:
+
+成绩=100 + IV1
+
+↓
+
+密文A
+
+
+成绩=100 + IV2
+
+↓
+
+密文B
+</code></pre>
+
+
+
+<p>
+AES-GCM推荐使用12字节IV。
+</p>
+
+
+
+
+<h2>Authentication Tag</h2>
+
+
+<p>
+AES-GCM除了生成密文，
+还会生成认证标签（Tag）。
+</p>
+
+
+<p>
+Tag用于检测：
+</p>
+
+
+<ul>
+
+<li>数据是否被修改</li>
+
+<li>密钥是否正确</li>
+
+<li>密文是否完整</li>
+
+</ul>
+
+
+
+
+<h2>Web Crypto API中的AES-GCM</h2>
+
+
+<pre><code>
+crypto.subtle.decrypt(
+{
+    name:"AES-GCM",
+    iv:iv
+},
+key,
+data
+)
+</code></pre>
+
+
+
+<table>
+
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+
+
+<tr>
+<td>AES-GCM</td>
+<td>加密算法</td>
+</tr>
+
+
+<tr>
+<td>key</td>
+<td>AES密钥</td>
+</tr>
+
+
+<tr>
+<td>iv</td>
+<td>初始化向量</td>
+</tr>
+
+
+<tr>
+<td>data</td>
+<td>密文</td>
+</tr>
+
+
+</table>
+
+
+
+
+<h2>MOE CTF案例分析</h2>
+
+
+<p>
+该题通过前端JavaScript实现成绩查询功能。
+学生信息被AES-GCM加密后存储在网页中。
+</p>
+
+
+<h3>加密流程</h3>
+
+
+<pre><code>
+学生信息(JSON)
+
+↓
+
+AES-GCM加密
+
+↓
+
+Base64编码
+
+↓
+
+前端保存密文
+</code></pre>
+
+
+
+
+<h3>密钥生成</h3>
+
+
+<p>
+题目中使用学号生成AES密钥：
+</p>
+
+
+<pre><code>
+学号
+
+↓
+
+SHA-256
+
+↓
+
+32字节Hash
+
+↓
+
+AES-256 Key
+</code></pre>
+
+
+
+<p>
+最终：
+
+</p>
+
+
+<pre><code>
+Key = SHA256(学号)
+</code></pre>
+
+
+
+
+<h3>IV分析</h3>
+
+
+<p>
+Base64编码：
+</p>
+
+
+<pre><code>
+bW9lY3RmMjAyNml2
+</code></pre>
+
+
+<p>
+解码后：
+</p>
+
+
+<pre><code>
+moectf2026iv
+</code></pre>
+
+
+
+<h2>漏洞分析</h2>
+
+
+<p>
+AES-GCM算法本身是安全的，
+真正的问题在于密钥设计。
+</p>
+
+
+<p>
+如果密钥来源于：
+</p>
+
+
+<ul>
+
+<li>用户名</li>
+
+<li>学号</li>
+
+<li>手机号</li>
+
+<li>生日</li>
+
+</ul>
+
+
+<p>
+攻击者可以通过猜测输入生成Key，
+然后尝试解密。
+</p>
+
+
+
+<pre><code>
+猜测学号
+
+↓
+
+SHA256生成Key
+
+↓
+
+AES-GCM解密
+
+↓
+
+获取数据
+</code></pre>
+
+
+
+
+<h2>CTF分析思路</h2>
+
+
+<p>
+遇到AES-GCM加密题时，需要重点关注：
+</p>
+
+
+<ol>
+
+<li>Key在哪里生成？</li>
+
+<li>IV是否固定？</li>
+
+<li>密钥是否可预测？</li>
+
+<li>密文是否暴露在前端？</li>
+
+</ol>
+
+
+
+
+<h2>总结</h2>
+
+
+<p>
+AES-GCM是一种安全、高效的现代认证加密算法。
+</p>
+
+
+<p>
+但是实际安全性不仅取决于算法，
+更取决于密钥管理方式。
+</p>
+
+
+<blockquote>
+在CTF和真实安全场景中，
+很多漏洞不是出现在加密算法，
+而是出现在密钥设计。
+</blockquote>
+
+
+<p>
+分析加密系统时，首先应该思考：
+</p>
+
+
+<pre><code>
+Key从哪里来？
+
+是否可以预测？
+
+是否可以爆破？
+</code></pre>
+
+
+</div>
+
+        <div class="article-tags">
+            <span class="article-tag">#个人网站</span>
+            <span class="article-tag">#GitHub Pages</span>
+            <span class="article-tag">#教程</span>
+            <span class="article-tag">#前端开发</span>
+        </div>
+
+        <div class="article-nav">
+            <a href="post2.html">&larr; 上一篇文章</a>
+            <a href="../index.html#projects" class="next">返回作品集 &rarr;</a>
+        </div>
+
+        <a href="../index.html" class="back-btn">&larr; 返回首页</a>
+    </article>
+
+    <footer>
+        <div class="footer-text">
+            <p>&copy; 2026 张佳霖 - 个人网站 | <a href="https://github.com/Zzzhan999" target="_blank">GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    </script>
+</body>
+</html>
